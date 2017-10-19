@@ -1,19 +1,14 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
-
 	"golang.org/x/net/proxy"
 	"golang.org/x/net/websocket"
-)
-
-var (
-	target = flag.String("target", "", "The target host:port to tunnel to")
-	port       = flag.Int("port", 8080, "The local port to listen on")
+	"os"
+	"strconv"
 )
 
 func iocopy(dst io.Writer, src io.Reader, c chan error) {
@@ -50,14 +45,14 @@ func handleConnection(wsConfig *websocket.Config, conn net.Conn) {
 }
 
 func main() {
-	flag.Parse()
-
-	config, err := websocket.NewConfig(*target, "http://localhost/")
+	target := os.Getenv("TARGET")
+	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	config, err := websocket.NewConfig(target, "http://localhost/")
 	if err != nil {
 		panic(err)
 	}
 
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
 	}
